@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QUITUS Pay - Connexion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        * { font-family: 'DM Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        h1, h2, h3, .font-display { font-family: 'Space Grotesk', sans-serif; }
+        
+        :root {
+            --quitus-dark: #1a2e0a;
+            --quitus-primary: #2d4a0f;
+            --quitus-secondary: #4a7c23;
+            --quitus-light: #e8f5e9;
+        }
+        
+        .bg-gradient-quitus {
+            background: linear-gradient(135deg, var(--quitus-dark) 0%, var(--quitus-primary) 50%, var(--quitus-secondary) 100%);
+        }
+        
+        .input-field {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: var(--quitus-secondary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--quitus-dark) 0%, var(--quitus-primary) 100%);
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(45, 74, 15, 0.4); }
+        .btn-primary:active { transform: translateY(0); }
+        
+        .social-btn { transition: all 0.2s; }
+        .social-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        .floating-shapes { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
+        .shape { position: absolute; background: rgba(255,255,255,0.1); border-radius: 50%; }
+        .shape-1 { width: 200px; height: 200px; top: -50px; right: -50px; }
+        .shape-2 { width: 150px; height: 150px; bottom: 100px; left: -75px; }
+        .shape-3 { width: 80px; height: 80px; top: 150px; right: 30px; }
+        
+        .lang-selector { position: relative; }
+        .lang-dropdown {
+            display: none; position: absolute; top: 100%; right: 0;
+            background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            overflow: hidden; z-index: 100; min-width: 140px;
+        }
+        .lang-dropdown.show { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative overflow-hidden">
+        
+        <!-- Header with gradient -->
+        <div class="bg-gradient-quitus text-white pt-8 pb-20 px-6 relative">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+            
+            <!-- Language Selector -->
+            <div class="relative z-10 flex justify-end mb-4">
+                <div class="lang-selector">
+                    <button onclick="toggleLangDropdown()" class="flex items-center space-x-2 bg-white/20 px-3 py-2 rounded-lg text-sm">
+                        <i class="fas fa-globe"></i>
+                        <span id="currentLang">FR</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="langDropdown" class="lang-dropdown">
+                        <button onclick="setLanguage('fr')" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-gray-50 text-left text-gray-700">
+                            <span>🇫🇷</span><span>Français</span>
+                        </button>
+                        <button onclick="setLanguage('en')" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-gray-50 text-left text-gray-700">
+                            <span>🇬🇧</span><span>English</span>
+                        </button>
+                        <button onclick="setLanguage('es')" class="flex items-center space-x-3 w-full px-4 py-3 hover:bg-gray-50 text-left text-gray-700">
+                            <span>🇪🇸</span><span>Español</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative z-10 text-center">
+                <div class="w-32 h-20 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg p-2">
+                    <img src="Logo_QPS.png" alt="QUITUS" class="w-full h-full object-contain">
+                </div>
+                <p class="text-white/80 text-sm" data-i18n="tagline">Paiements simplifiés pour l'Afrique</p>
+            </div>
+        </div>
+        
+        <!-- Login Form Card -->
+        <div class="px-6 -mt-12 relative z-20">
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-xl font-bold text-gray-800 font-display mb-1" data-i18n="login">Connexion</h2>
+                <p class="text-gray-500 text-sm mb-6" data-i18n="loginSubtitle">Connectez-vous à votre compte</p>
+                
+                <!-- Phone Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="phoneNumber">Numéro de téléphone</label>
+                    <div class="flex">
+                        <div class="flex items-center px-4 bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl">
+                            <img src="https://flagcdn.com/w20/cm.png" class="w-5 h-4 mr-2" alt="CM">
+                            <span class="text-gray-600 font-medium">+237</span>
+                        </div>
+                        <input type="tel" id="phone" placeholder="6XX XXX XXX" 
+                            class="input-field flex-1 px-4 py-3 rounded-r-xl focus:outline-none text-lg" maxlength="9">
+                    </div>
+                </div>
+                
+                <!-- PIN Input -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="pinCode">Code PIN</label>
+                    <div class="relative">
+                        <input type="password" id="pin" placeholder="••••••" 
+                            class="input-field w-full px-4 py-3 rounded-xl focus:outline-none text-lg tracking-widest" maxlength="6">
+                        <button type="button" onclick="togglePin()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                            <i class="fas fa-eye" id="pinToggle"></i>
+                        </button>
+                    </div>
+                    <div class="flex justify-end mt-2">
+                        <a href="#" class="text-sm text-green-700 font-medium" data-i18n="forgotPin">Code PIN oublié?</a>
+                    </div>
+                </div>
+                
+                <!-- Login Button -->
+                <button onclick="login()" class="btn-primary w-full text-white py-4 rounded-xl font-semibold text-lg mb-4">
+                    <span data-i18n="loginBtn">Se connecter</span>
+                </button>
+                
+                <!-- Biometric Option -->
+                <button class="w-full border-2 border-gray-200 py-3 rounded-xl font-medium text-gray-700 flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-fingerprint text-xl text-green-600"></i>
+                    <span data-i18n="useFingerprint">Utiliser l'empreinte digitale</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <div class="px-6 my-6">
+            <div class="flex items-center">
+                <div class="flex-1 h-px bg-gray-200"></div>
+                <span class="px-4 text-sm text-gray-400" data-i18n="orContinueWith">ou continuer avec</span>
+                <div class="flex-1 h-px bg-gray-200"></div>
+            </div>
+        </div>
+        
+        <!-- Social Login -->
+        <div class="px-6 flex space-x-4">
+            <button class="social-btn flex-1 border-2 border-gray-200 py-3 rounded-xl flex items-center justify-center space-x-2 bg-white">
+                <img src="https://www.google.com/favicon.ico" class="w-5 h-5" alt="Google">
+                <span class="font-medium text-gray-700">Google</span>
+            </button>
+            <button class="social-btn flex-1 border-2 border-gray-200 py-3 rounded-xl flex items-center justify-center space-x-2 bg-white">
+                <i class="fab fa-facebook text-xl text-blue-600"></i>
+                <span class="font-medium text-gray-700">Facebook</span>
+            </button>
+        </div>
+        
+        <!-- Register Link -->
+        <div class="text-center py-8">
+            <p class="text-gray-500">
+                <span data-i18n="noAccount">Pas encore de compte?</span>
+                <a href="quitus_pay_register_v2.html" class="text-green-700 font-semibold" data-i18n="register">S'inscrire</a>
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="absolute bottom-4 left-0 right-0 text-center">
+            <p class="text-xs text-gray-400">
+                <i class="fas fa-lock mr-1"></i> <span data-i18n="securedBy">Sécurisé par QUITUS Pay v2.0</span>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 text-center">
+            <div class="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-700 font-medium" data-i18n="loggingIn">Connexion en cours...</p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== i18n ====================
+        const translations = {
+            fr: {
+                tagline: "Paiements simplifiés pour l'Afrique",
+                login: "Connexion",
+                loginSubtitle: "Connectez-vous à votre compte",
+                phoneNumber: "Numéro de téléphone",
+                pinCode: "Code PIN",
+                forgotPin: "Code PIN oublié?",
+                loginBtn: "Se connecter",
+                useFingerprint: "Utiliser l'empreinte digitale",
+                orContinueWith: "ou continuer avec",
+                noAccount: "Pas encore de compte?",
+                register: "S'inscrire",
+                securedBy: "Sécurisé par QUITUS Pay v2.0",
+                loggingIn: "Connexion en cours...",
+                invalidPhone: "Veuillez entrer un numéro de téléphone valide",
+                invalidPin: "Veuillez entrer votre code PIN"
+            },
+            en: {
+                tagline: "Simplified payments for Africa",
+                login: "Login",
+                loginSubtitle: "Sign in to your account",
+                phoneNumber: "Phone number",
+                pinCode: "PIN code",
+                forgotPin: "Forgot PIN?",
+                loginBtn: "Sign in",
+                useFingerprint: "Use fingerprint",
+                orContinueWith: "or continue with",
+                noAccount: "Don't have an account?",
+                register: "Sign up",
+                securedBy: "Secured by QUITUS Pay v2.0",
+                loggingIn: "Signing in...",
+                invalidPhone: "Please enter a valid phone number",
+                invalidPin: "Please enter your PIN"
+            },
+            es: {
+                tagline: "Pagos simplificados para África",
+                login: "Iniciar sesión",
+                loginSubtitle: "Inicia sesión en tu cuenta",
+                phoneNumber: "Número de teléfono",
+                pinCode: "Código PIN",
+                forgotPin: "¿Olvidaste el PIN?",
+                loginBtn: "Iniciar sesión",
+                useFingerprint: "Usar huella digital",
+                orContinueWith: "o continuar con",
+                noAccount: "¿No tienes cuenta?",
+                register: "Registrarse",
+                securedBy: "Asegurado por QUITUS Pay v2.0",
+                loggingIn: "Iniciando sesión...",
+                invalidPhone: "Por favor ingrese un número de teléfono válido",
+                invalidPin: "Por favor ingrese su PIN"
+            }
+        };
+        
+        let currentLanguage = localStorage.getItem('quitusLang') || 'fr';
+        
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('quitusLang', lang);
+            document.getElementById('currentLang').textContent = lang.toUpperCase();
+            applyTranslations();
+            toggleLangDropdown();
+        }
+        
+        function applyTranslations() {
+            const t = translations[currentLanguage];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.textContent = t[key];
+            });
+        }
+        
+        function toggleLangDropdown() {
+            document.getElementById('langDropdown').classList.toggle('show');
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.lang-selector')) {
+                document.getElementById('langDropdown').classList.remove('show');
+            }
+        });
+        
+        // ==================== Auth Functions ====================
+        function togglePin() {
+            const pin = document.getElementById('pin');
+            const toggle = document.getElementById('pinToggle');
+            if (pin.type === 'password') {
+                pin.type = 'text';
+                toggle.classList.remove('fa-eye');
+                toggle.classList.add('fa-eye-slash');
+            } else {
+                pin.type = 'password';
+                toggle.classList.remove('fa-eye-slash');
+                toggle.classList.add('fa-eye');
+            }
+        }
+        
+        function login() {
+            const phone = document.getElementById('phone').value;
+            const pin = document.getElementById('pin').value;
+            const t = translations[currentLanguage];
+            
+            if (!phone || phone.length < 9) {
+                alert(t.invalidPhone);
+                return;
+            }
+            if (!pin || pin.length < 4) {
+                alert(t.invalidPin);
+                return;
+            }
+            
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+            
+            setTimeout(() => {
+                window.location.href = 'quitus_pay_home_v2.html';
+            }, 2000);
+        }
+        
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 9) value = value.slice(0, 9);
+            e.target.value = value;
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('currentLang').textContent = currentLanguage.toUpperCase();
+            applyTranslations();
+        });
+    </script>
+</body>
+</html>

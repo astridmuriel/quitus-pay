@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QUITUS Pay - Envoyer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        * { 
+            font-family: 'DM Sans', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        h1, h2, h3, .font-display { 
+            font-family: 'Space Grotesk', sans-serif; 
+        }
+        
+        :root {
+            --quitus-dark: #1a2e0a;
+            --quitus-primary: #2d4a0f;
+            --quitus-secondary: #4a7c23;
+            --quitus-accent: #7cb342;
+            --quitus-light: #e8f5e9;
+            --mtn-yellow: #ffcc00;
+            --mtn-dark: #004f9f;
+            --orange-primary: #ff6600;
+            --orange-dark: #e55c00;
+        }
+        
+        .bg-gradient-quitus {
+            background: linear-gradient(135deg, var(--quitus-dark) 0%, var(--quitus-primary) 50%, var(--quitus-secondary) 100%);
+        }
+        
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            border-color: var(--quitus-secondary);
+            box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+        }
+        
+        .operator-card {
+            transition: all 0.2s ease;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .operator-card.selected {
+            border-color: var(--quitus-primary);
+            background: var(--quitus-light);
+        }
+        
+        .operator-card:active {
+            transform: scale(0.98);
+        }
+        
+        .amount-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .amount-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .amount-btn.selected {
+            background: var(--quitus-primary);
+            color: white;
+            border-color: var(--quitus-primary);
+        }
+        
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        .step-indicator.active {
+            background: var(--quitus-primary);
+            color: white;
+        }
+        
+        .step-indicator.completed {
+            background: var(--quitus-secondary);
+            color: white;
+        }
+        
+        .otp-input {
+            width: 48px;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .otp-input:focus {
+            border-color: var(--quitus-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+        }
+        
+        .otp-input.filled {
+            border-color: var(--quitus-secondary);
+            background: var(--quitus-light);
+        }
+        
+        .slide-left {
+            animation: slideLeft 0.3s ease-out;
+        }
+        
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--quitus-dark) 0%, var(--quitus-primary) 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 74, 15, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .success-animation {
+            animation: successPop 0.5s ease-out;
+        }
+        
+        @keyframes successPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative">
+        
+        <!-- Header -->
+        <div class="sticky top-0 bg-white z-40 border-b">
+            <div class="flex items-center justify-between p-4">
+                <button onclick="goBack()" class="w-10 h-10 flex items-center justify-center">
+                    <i class="fas fa-arrow-left text-gray-600 text-lg"></i>
+                </button>
+                <h1 class="font-bold text-lg font-display" data-i18n="sendMoney">Envoyer de l'argent</h1>
+                <div class="w-10"></div>
+            </div>
+            
+            <!-- Step Indicator -->
+            <div class="flex items-center justify-center space-x-2 pb-4 px-4">
+                <div id="step1Indicator" class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                <div class="h-0.5 w-8 bg-gray-200" id="line1"></div>
+                <div id="step2Indicator" class="step-indicator w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">2</div>
+                <div class="h-0.5 w-8 bg-gray-200" id="line2"></div>
+                <div id="step3Indicator" class="step-indicator w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">3</div>
+                <div class="h-0.5 w-8 bg-gray-200" id="line3"></div>
+                <div id="step4Indicator" class="step-indicator w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">
+                    <i class="fas fa-check text-xs"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 1: Recipient & Amount -->
+        <div id="step1" class="p-5 slide-left">
+            <h2 class="text-xl font-bold text-gray-800 font-display mb-6" data-i18n="recipientDetails">Détails du destinataire</h2>
+            
+            <!-- Select Source Operator -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3" data-i18n="sendFrom">Envoyer depuis</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="selectOperator('mtn')" id="operatorMtn" class="operator-card rounded-xl p-4 flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center">
+                            <span class="text-blue-900 font-bold text-xs">MTN</span>
+                        </div>
+                        <div class="text-left">
+                            <p class="font-semibold text-gray-800 text-sm">MTN MoMo</p>
+                            <p class="text-xs text-gray-500">250,000 XAF</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="selectOperator('orange')" id="operatorOrange" class="operator-card rounded-xl p-4 flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xs">OM</span>
+                        </div>
+                        <div class="text-left">
+                            <p class="font-semibold text-gray-800 text-sm">Orange Money</p>
+                            <p class="text-xs text-gray-500">180,000 XAF</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Recipient Phone -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="recipientPhone">Numéro du destinataire</label>
+                <div class="flex">
+                    <div class="flex items-center px-4 bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl">
+                        <img src="https://flagcdn.com/w20/cm.png" class="w-5 h-4 mr-2" alt="CM">
+                        <span class="text-gray-600 font-medium">+237</span>
+                    </div>
+                    <input type="tel" id="recipientPhone" placeholder="6XX XXX XXX" 
+                        class="input-field flex-1 px-4 py-3 border-2 border-gray-200 rounded-r-xl focus:outline-none text-lg"
+                        maxlength="9" oninput="validateStep1()">
+                </div>
+            </div>
+            
+            <!-- Amount -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="amount">Montant (XAF)</label>
+                <input type="number" id="amount" placeholder="0" 
+                    class="input-field w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none text-2xl font-bold text-center"
+                    oninput="validateStep1()">
+                
+                <!-- Quick Amounts -->
+                <div class="flex flex-wrap gap-2 mt-3">
+                    <button onclick="setAmount(1000)" class="amount-btn px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium">1,000</button>
+                    <button onclick="setAmount(5000)" class="amount-btn px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium">5,000</button>
+                    <button onclick="setAmount(10000)" class="amount-btn px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium">10,000</button>
+                    <button onclick="setAmount(25000)" class="amount-btn px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium">25,000</button>
+                    <button onclick="setAmount(50000)" class="amount-btn px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium">50,000</button>
+                </div>
+            </div>
+            
+            <!-- Fee Display -->
+            <div id="feeDisplay" class="hidden mb-6 p-4 bg-gray-50 rounded-xl">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-gray-600" data-i18n="transferAmount">Montant du transfert</span>
+                    <span class="font-medium" id="displayAmount">0 XAF</span>
+                </div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-gray-600" data-i18n="fees">Frais</span>
+                    <span class="font-medium" id="displayFee">0 XAF</span>
+                </div>
+                <div class="border-t pt-2 mt-2">
+                    <div class="flex justify-between">
+                        <span class="font-semibold text-gray-800" data-i18n="total">Total</span>
+                        <span class="font-bold text-lg text-green-700" id="displayTotal">0 XAF</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="step1Btn" onclick="goToStep2()" disabled 
+                class="btn-primary w-full text-white py-4 rounded-xl font-semibold text-lg">
+                <span data-i18n="continue">Continuer</span>
+            </button>
+        </div>
+        
+        <!-- Step 2: OTP Verification for Recipient -->
+        <div id="step2" class="hidden p-5 slide-left">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-blue-600 text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 font-display mb-2" data-i18n="verifyRecipient">Vérification du destinataire</h2>
+                <p class="text-gray-500" data-i18n="otpSentTo">Un code OTP a été envoyé au</p>
+                <p class="font-bold text-gray-800 text-lg mt-1" id="otpPhone">+237 6XX XXX XXX</p>
+            </div>
+            
+            <!-- OTP Input -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-4 text-center" data-i18n="enterOtp">Entrez le code à 6 chiffres</label>
+                <div class="flex justify-center space-x-2">
+                    <input type="text" maxlength="1" class="otp-input" oninput="handleOtpInput(this, 0)" onkeydown="handleOtpKeydown(event, 0)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="handleOtpInput(this, 1)" onkeydown="handleOtpKeydown(event, 1)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="handleOtpInput(this, 2)" onkeydown="handleOtpKeydown(event, 2)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="handleOtpInput(this, 3)" onkeydown="handleOtpKeydown(event, 3)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="handleOtpInput(this, 4)" onkeydown="handleOtpKeydown(event, 4)">
+                    <input type="text" maxlength="1" class="otp-input" oninput="handleOtpInput(this, 5)" onkeydown="handleOtpKeydown(event, 5)">
+                </div>
+            </div>
+            
+            <!-- Resend OTP -->
+            <div class="text-center mb-6">
+                <p class="text-gray-500 text-sm" data-i18n="didntReceive">Vous n'avez pas reçu le code?</p>
+                <button id="resendBtn" onclick="resendOtp()" class="text-green-700 font-semibold text-sm mt-1" disabled>
+                    <span data-i18n="resendIn">Renvoyer dans</span> <span id="countdown">60</span>s
+                </button>
+            </div>
+            
+            <button id="step2Btn" onclick="goToStep3()" disabled 
+                class="btn-primary w-full text-white py-4 rounded-xl font-semibold text-lg">
+                <span data-i18n="verifyAndContinue">Vérifier et continuer</span>
+            </button>
+        </div>
+        
+        <!-- Step 3: Confirm with PIN -->
+        <div id="step3" class="hidden p-5 slide-left">
+            <h2 class="text-xl font-bold text-gray-800 font-display mb-6 text-center" data-i18n="confirmTransfer">Confirmer le transfert</h2>
+            
+            <!-- Transfer Summary -->
+            <div class="bg-gray-50 rounded-2xl p-5 mb-6">
+                <div class="flex items-center justify-between mb-4 pb-4 border-b">
+                    <span class="text-gray-600" data-i18n="recipient">Destinataire</span>
+                    <div class="text-right">
+                        <p class="font-bold text-gray-800" id="summaryPhone">+237 6XX XXX XXX</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mb-4 pb-4 border-b">
+                    <span class="text-gray-600" data-i18n="from">Depuis</span>
+                    <div class="flex items-center space-x-2">
+                        <div id="summaryOperatorIcon" class="w-6 h-6 bg-yellow-400 rounded flex items-center justify-center">
+                            <span class="text-blue-900 font-bold text-xs">MTN</span>
+                        </div>
+                        <span class="font-medium" id="summaryOperator">MTN MoMo</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mb-4 pb-4 border-b">
+                    <span class="text-gray-600" data-i18n="amount">Montant</span>
+                    <span class="font-bold text-lg" id="summaryAmount">10,000 XAF</span>
+                </div>
+                <div class="flex items-center justify-between mb-4 pb-4 border-b">
+                    <span class="text-gray-600" data-i18n="fees">Frais</span>
+                    <span class="font-medium" id="summaryFee">100 XAF</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold text-gray-800" data-i18n="totalDebit">Total à débiter</span>
+                    <span class="font-bold text-xl text-green-700" id="summaryTotal">10,100 XAF</span>
+                </div>
+            </div>
+            
+            <!-- PIN Entry -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-4 text-center" data-i18n="enterPin">Entrez votre code PIN</label>
+                <div class="flex justify-center space-x-3">
+                    <input type="password" maxlength="1" class="otp-input" oninput="handlePinInput(this, 0)" onkeydown="handlePinKeydown(event, 0)">
+                    <input type="password" maxlength="1" class="otp-input" oninput="handlePinInput(this, 1)" onkeydown="handlePinKeydown(event, 1)">
+                    <input type="password" maxlength="1" class="otp-input" oninput="handlePinInput(this, 2)" onkeydown="handlePinKeydown(event, 2)">
+                    <input type="password" maxlength="1" class="otp-input" oninput="handlePinInput(this, 3)" onkeydown="handlePinKeydown(event, 3)">
+                </div>
+            </div>
+            
+            <button id="step3Btn" onclick="processTransfer()" disabled 
+                class="btn-primary w-full text-white py-4 rounded-xl font-semibold text-lg">
+                <span data-i18n="confirmAndSend">Confirmer et envoyer</span>
+            </button>
+        </div>
+        
+        <!-- Step 4: Success -->
+        <div id="step4" class="hidden p-5 slide-left">
+            <div class="text-center py-10">
+                <div class="success-animation w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check text-green-600 text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 font-display mb-2" data-i18n="transferSuccess">Transfert réussi!</h2>
+                <p class="text-gray-500 mb-6" data-i18n="transferSuccessDesc">Votre argent a été envoyé avec succès.</p>
+                
+                <!-- Receipt -->
+                <div class="bg-gray-50 rounded-2xl p-5 text-left mb-6">
+                    <div class="flex justify-between mb-3">
+                        <span class="text-gray-500" data-i18n="reference">Référence</span>
+                        <span class="font-mono font-bold" id="txnRef">QPS-XXXX-XXXX</span>
+                    </div>
+                    <div class="flex justify-between mb-3">
+                        <span class="text-gray-500" data-i18n="recipient">Destinataire</span>
+                        <span class="font-medium" id="receiptPhone">+237 6XX XXX XXX</span>
+                    </div>
+                    <div class="flex justify-between mb-3">
+                        <span class="text-gray-500" data-i18n="amount">Montant</span>
+                        <span class="font-bold text-green-700" id="receiptAmount">10,000 XAF</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500" data-i18n="date">Date</span>
+                        <span class="font-medium" id="receiptDate">-</span>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="shareReceipt()" class="flex-1 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700">
+                        <i class="fas fa-share-alt mr-2"></i>
+                        <span data-i18n="share">Partager</span>
+                    </button>
+                    <button onclick="goHome()" class="flex-1 py-3 bg-gradient-quitus text-white rounded-xl font-semibold">
+                        <span data-i18n="done">Terminé</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 text-center">
+                <div class="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-700 font-medium" data-i18n="processing">Traitement en cours...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== State Management ====================
+        let selectedOperator = null;
+        let transferData = {
+            operator: null,
+            phone: '',
+            amount: 0,
+            fee: 0,
+            total: 0
+        };
+        
+        // ==================== i18n ====================
+        const translations = {
+            fr: {
+                sendMoney: "Envoyer de l'argent",
+                recipientDetails: "Détails du destinataire",
+                sendFrom: "Envoyer depuis",
+                recipientPhone: "Numéro du destinataire",
+                amount: "Montant (XAF)",
+                transferAmount: "Montant du transfert",
+                fees: "Frais",
+                total: "Total",
+                continue: "Continuer",
+                verifyRecipient: "Vérification du destinataire",
+                otpSentTo: "Un code OTP a été envoyé au",
+                enterOtp: "Entrez le code à 6 chiffres",
+                didntReceive: "Vous n'avez pas reçu le code?",
+                resendIn: "Renvoyer dans",
+                resend: "Renvoyer le code",
+                verifyAndContinue: "Vérifier et continuer",
+                confirmTransfer: "Confirmer le transfert",
+                recipient: "Destinataire",
+                from: "Depuis",
+                totalDebit: "Total à débiter",
+                enterPin: "Entrez votre code PIN",
+                confirmAndSend: "Confirmer et envoyer",
+                transferSuccess: "Transfert réussi!",
+                transferSuccessDesc: "Votre argent a été envoyé avec succès.",
+                reference: "Référence",
+                date: "Date",
+                share: "Partager",
+                done: "Terminé",
+                processing: "Traitement en cours..."
+            },
+            en: {
+                sendMoney: "Send Money",
+                recipientDetails: "Recipient Details",
+                sendFrom: "Send from",
+                recipientPhone: "Recipient phone number",
+                amount: "Amount (XAF)",
+                transferAmount: "Transfer amount",
+                fees: "Fees",
+                total: "Total",
+                continue: "Continue",
+                verifyRecipient: "Verify Recipient",
+                otpSentTo: "An OTP code was sent to",
+                enterOtp: "Enter the 6-digit code",
+                didntReceive: "Didn't receive the code?",
+                resendIn: "Resend in",
+                resend: "Resend code",
+                verifyAndContinue: "Verify and continue",
+                confirmTransfer: "Confirm Transfer",
+                recipient: "Recipient",
+                from: "From",
+                totalDebit: "Total to debit",
+                enterPin: "Enter your PIN",
+                confirmAndSend: "Confirm and send",
+                transferSuccess: "Transfer successful!",
+                transferSuccessDesc: "Your money has been sent successfully.",
+                reference: "Reference",
+                date: "Date",
+                share: "Share",
+                done: "Done",
+                processing: "Processing..."
+            },
+            es: {
+                sendMoney: "Enviar Dinero",
+                recipientDetails: "Detalles del Destinatario",
+                sendFrom: "Enviar desde",
+                recipientPhone: "Número de teléfono del destinatario",
+                amount: "Monto (XAF)",
+                transferAmount: "Monto de transferencia",
+                fees: "Comisiones",
+                total: "Total",
+                continue: "Continuar",
+                verifyRecipient: "Verificar Destinatario",
+                otpSentTo: "Se envió un código OTP al",
+                enterOtp: "Ingrese el código de 6 dígitos",
+                didntReceive: "¿No recibió el código?",
+                resendIn: "Reenviar en",
+                resend: "Reenviar código",
+                verifyAndContinue: "Verificar y continuar",
+                confirmTransfer: "Confirmar Transferencia",
+                recipient: "Destinatario",
+                from: "Desde",
+                totalDebit: "Total a debitar",
+                enterPin: "Ingrese su PIN",
+                confirmAndSend: "Confirmar y enviar",
+                transferSuccess: "¡Transferencia exitosa!",
+                transferSuccessDesc: "Su dinero ha sido enviado exitosamente.",
+                reference: "Referencia",
+                date: "Fecha",
+                share: "Compartir",
+                done: "Listo",
+                processing: "Procesando..."
+            }
+        };
+        
+        let currentLanguage = localStorage.getItem('quitusLang') || 'fr';
+        
+        function applyTranslations() {
+            const t = translations[currentLanguage];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.textContent = t[key];
+            });
+        }
+        
+        // ==================== Operator Selection ====================
+        function selectOperator(operator) {
+            selectedOperator = operator;
+            document.getElementById('operatorMtn').classList.remove('selected');
+            document.getElementById('operatorOrange').classList.remove('selected');
+            document.getElementById('operator' + operator.charAt(0).toUpperCase() + operator.slice(1)).classList.add('selected');
+            validateStep1();
+        }
+        
+        // ==================== Amount Handling ====================
+        function setAmount(amount) {
+            document.getElementById('amount').value = amount;
+            
+            // Update quick amount buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (parseInt(btn.textContent.replace(/,/g, '')) === amount) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            validateStep1();
+        }
+        
+        function calculateFee(amount) {
+            // Simple fee calculation: 1% with min 50 XAF, max 2000 XAF
+            let fee = Math.round(amount * 0.01);
+            fee = Math.max(50, Math.min(fee, 2000));
+            return fee;
+        }
+        
+        // ==================== Step 1 Validation ====================
+        function validateStep1() {
+            const phone = document.getElementById('recipientPhone').value;
+            const amount = parseInt(document.getElementById('amount').value) || 0;
+            const btn = document.getElementById('step1Btn');
+            const feeDisplay = document.getElementById('feeDisplay');
+            
+            const isValid = selectedOperator && phone.length === 9 && amount >= 100;
+            
+            btn.disabled = !isValid;
+            
+            if (amount >= 100) {
+                const fee = calculateFee(amount);
+                const total = amount + fee;
+                
+                document.getElementById('displayAmount').textContent = amount.toLocaleString() + ' XAF';
+                document.getElementById('displayFee').textContent = fee.toLocaleString() + ' XAF';
+                document.getElementById('displayTotal').textContent = total.toLocaleString() + ' XAF';
+                
+                feeDisplay.classList.remove('hidden');
+                
+                transferData.amount = amount;
+                transferData.fee = fee;
+                transferData.total = total;
+            } else {
+                feeDisplay.classList.add('hidden');
+            }
+        }
+        
+        // ==================== Step Navigation ====================
+        function goToStep2() {
+            transferData.operator = selectedOperator;
+            transferData.phone = document.getElementById('recipientPhone').value;
+            
+            // Update step indicators
+            document.getElementById('step1Indicator').classList.add('completed');
+            document.getElementById('step2Indicator').classList.add('active');
+            document.getElementById('line1').style.background = 'var(--quitus-secondary)';
+            
+            // Show recipient phone
+            document.getElementById('otpPhone').textContent = '+237 ' + formatPhone(transferData.phone);
+            
+            // Hide step 1, show step 2
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            
+            // Start countdown
+            startOtpCountdown();
+            
+            // Simulate sending OTP
+            console.log('Sending OTP to +237' + transferData.phone);
+        }
+        
+        function goToStep3() {
+            // Update step indicators
+            document.getElementById('step2Indicator').classList.add('completed');
+            document.getElementById('step3Indicator').classList.add('active');
+            document.getElementById('line2').style.background = 'var(--quitus-secondary)';
+            
+            // Update summary
+            document.getElementById('summaryPhone').textContent = '+237 ' + formatPhone(transferData.phone);
+            document.getElementById('summaryAmount').textContent = transferData.amount.toLocaleString() + ' XAF';
+            document.getElementById('summaryFee').textContent = transferData.fee.toLocaleString() + ' XAF';
+            document.getElementById('summaryTotal').textContent = transferData.total.toLocaleString() + ' XAF';
+            
+            // Update operator display
+            if (transferData.operator === 'mtn') {
+                document.getElementById('summaryOperatorIcon').className = 'w-6 h-6 bg-yellow-400 rounded flex items-center justify-center';
+                document.getElementById('summaryOperatorIcon').innerHTML = '<span class="text-blue-900 font-bold text-xs">MTN</span>';
+                document.getElementById('summaryOperator').textContent = 'MTN MoMo';
+            } else {
+                document.getElementById('summaryOperatorIcon').className = 'w-6 h-6 bg-orange-500 rounded flex items-center justify-center';
+                document.getElementById('summaryOperatorIcon').innerHTML = '<span class="text-white font-bold text-xs">OM</span>';
+                document.getElementById('summaryOperator').textContent = 'Orange Money';
+            }
+            
+            // Hide step 2, show step 3
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        }
+        
+        function processTransfer() {
+            // Show loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+            
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+                
+                // Update step indicators
+                document.getElementById('step3Indicator').classList.add('completed');
+                document.getElementById('step4Indicator').classList.add('completed');
+                document.getElementById('line3').style.background = 'var(--quitus-secondary)';
+                
+                // Generate reference
+                const ref = 'QPS-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+                document.getElementById('txnRef').textContent = ref;
+                document.getElementById('receiptPhone').textContent = '+237 ' + formatPhone(transferData.phone);
+                document.getElementById('receiptAmount').textContent = transferData.amount.toLocaleString() + ' XAF';
+                document.getElementById('receiptDate').textContent = new Date().toLocaleString();
+                
+                // Hide step 3, show step 4
+                document.getElementById('step3').classList.add('hidden');
+                document.getElementById('step4').classList.remove('hidden');
+            }, 2000);
+        }
+        
+        // ==================== OTP Handling ====================
+        let otpInputs = [];
+        let pinInputs = [];
+        let countdownInterval;
+        
+        function handleOtpInput(input, index) {
+            input.value = input.value.replace(/\D/g, '');
+            
+            if (input.value.length === 1) {
+                input.classList.add('filled');
+                if (index < 5) {
+                    document.querySelectorAll('#step2 .otp-input')[index + 1].focus();
+                }
+            } else {
+                input.classList.remove('filled');
+            }
+            
+            validateOtp();
+        }
+        
+        function handleOtpKeydown(e, index) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                document.querySelectorAll('#step2 .otp-input')[index - 1].focus();
+            }
+        }
+        
+        function validateOtp() {
+            const inputs = document.querySelectorAll('#step2 .otp-input');
+            let otp = '';
+            inputs.forEach(input => otp += input.value);
+            document.getElementById('step2Btn').disabled = otp.length !== 6;
+        }
+        
+        function startOtpCountdown() {
+            let seconds = 60;
+            const resendBtn = document.getElementById('resendBtn');
+            const countdown = document.getElementById('countdown');
+            
+            clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                seconds--;
+                countdown.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = '<span data-i18n="resend">Renvoyer le code</span>';
+                    applyTranslations();
+                }
+            }, 1000);
+        }
+        
+        function resendOtp() {
+            console.log('Resending OTP...');
+            startOtpCountdown();
+            document.getElementById('resendBtn').disabled = true;
+            document.getElementById('resendBtn').innerHTML = '<span data-i18n="resendIn">Renvoyer dans</span> <span id="countdown">60</span>s';
+            applyTranslations();
+        }
+        
+        // ==================== PIN Handling ====================
+        function handlePinInput(input, index) {
+            input.value = input.value.replace(/\D/g, '');
+            
+            if (input.value.length === 1) {
+                input.classList.add('filled');
+                if (index < 3) {
+                    document.querySelectorAll('#step3 .otp-input')[index + 1].focus();
+                }
+            } else {
+                input.classList.remove('filled');
+            }
+            
+            validatePin();
+        }
+        
+        function handlePinKeydown(e, index) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                document.querySelectorAll('#step3 .otp-input')[index - 1].focus();
+            }
+        }
+        
+        function validatePin() {
+            const inputs = document.querySelectorAll('#step3 .otp-input');
+            let pin = '';
+            inputs.forEach(input => pin += input.value);
+            document.getElementById('step3Btn').disabled = pin.length !== 4;
+        }
+        
+        // ==================== Utility Functions ====================
+        function formatPhone(phone) {
+            return phone.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+        }
+        
+        function goBack() {
+            // Check current step and go back
+            if (!document.getElementById('step1').classList.contains('hidden')) {
+                window.location.href = 'quitus_pay_home_v2.html';
+            } else if (!document.getElementById('step2').classList.contains('hidden')) {
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('step1').classList.remove('hidden');
+                document.getElementById('step1Indicator').classList.remove('completed');
+                document.getElementById('step2Indicator').classList.remove('active');
+                document.getElementById('line1').style.background = '#e5e7eb';
+            } else if (!document.getElementById('step3').classList.contains('hidden')) {
+                document.getElementById('step3').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+                document.getElementById('step2Indicator').classList.remove('completed');
+                document.getElementById('step3Indicator').classList.remove('active');
+                document.getElementById('line2').style.background = '#e5e7eb';
+            }
+        }
+        
+        function goHome() {
+            window.location.href = 'quitus_pay_home_v2.html';
+        }
+        
+        function shareReceipt() {
+            const ref = document.getElementById('txnRef').textContent;
+            const text = `QUITUS Pay Transfer\nRef: ${ref}\nAmount: ${transferData.amount.toLocaleString()} XAF\nRecipient: +237 ${transferData.phone}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'QUITUS Pay Receipt', text: text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Receipt copied to clipboard!');
+            }
+        }
+        
+        // ==================== Initialize ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            applyTranslations();
+            
+            // Auto-format phone input
+            document.getElementById('recipientPhone').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 9) value = value.slice(0, 9);
+                e.target.value = value;
+            });
+        });
+    </script>
+</body>
+</html>
